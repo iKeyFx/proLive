@@ -3,15 +3,15 @@ import type { NextConfig } from "next";
 /**
  * Security headers applied to every response.
  *
- * The Content-Security-Policy is intentionally strict. `connect-src` allows the
- * Supabase project origin and the local price-simulator WebSocket; nothing else
- * may open a socket or fetch. We self-host fonts (next/font) so no font CDN is
- * whitelisted. `frame-ancestors 'none'` + X-Frame-Options block clickjacking.
+ * The Content-Security-Policy is intentionally strict. `connect-src` allows only
+ * the Supabase project origin (REST + realtime socket); nothing else may open a
+ * socket or fetch. Prices are computed in-process from a deterministic model, so
+ * no price feed origin is whitelisted. We self-host fonts (next/font) so no font
+ * CDN is needed. `frame-ancestors 'none'` + X-Frame-Options block clickjacking.
  */
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const FEED_WS = process.env.NEXT_PUBLIC_FEED_WS_URL ?? "ws://localhost:4001";
 
-// Derive ws(s) origins so realtime + simulator sockets are permitted.
+// Derive the ws(s) origin so the Supabase realtime socket is permitted.
 const supabaseWs = SUPABASE_URL ? SUPABASE_URL.replace(/^http/, "ws") : "";
 
 const csp = [
@@ -22,7 +22,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self' ${SUPABASE_URL} ${supabaseWs} ${FEED_WS}`.trim(),
+  `connect-src 'self' ${SUPABASE_URL} ${supabaseWs}`.trim(),
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
