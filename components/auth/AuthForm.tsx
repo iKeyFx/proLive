@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import type { AuthState } from "@/app/auth/actions";
+import { EyeIcon, EyeOffIcon } from "@/components/icons";
 
 type Action = (prev: AuthState, formData: FormData) => Promise<AuthState>;
 
@@ -28,6 +29,7 @@ export function AuthForm({
   action: Action;
 }) {
   const [state, formAction] = useActionState<AuthState, FormData>(action, {});
+  const [showPassword, setShowPassword] = useState(false);
   const isSignin = mode === "signin";
 
   return (
@@ -51,16 +53,27 @@ export function AuthForm({
         <label htmlFor="password" className="text-sm text-text-lo">
           Password
         </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete={isSignin ? "current-password" : "new-password"}
-          required
-          minLength={8}
-          className="tnum rounded-md border border-line bg-ink-900 px-3 py-2.5 text-text-hi outline-none focus:border-signal"
-          placeholder="At least 8 characters"
-        />
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete={isSignin ? "current-password" : "new-password"}
+            required
+            minLength={8}
+            className="tnum w-full rounded-md border border-line bg-ink-900 py-2.5 pl-3 pr-11 text-text-hi outline-none focus:border-signal"
+            placeholder="At least 8 characters"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-text-lo transition-colors hover:text-text-hi"
+          >
+            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+          </button>
+        </div>
       </div>
 
       {state.error ? (

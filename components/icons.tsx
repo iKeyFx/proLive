@@ -69,3 +69,18 @@ export const CloseIcon = ({ size = 18, className }: IconProps) => (
     <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );
+
+export const EyeIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+    <circle cx="12" cy="12" r="2.75" />
+  </svg>
+);
+
+export const EyeOffIcon = ({ size = 18, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M4 4l16 16" />
+    <path d="M10.6 6.1a10 10 0 0 1 1.4-.6c6 0 9.5 6.5 9.5 6.5a17.5 17.5 0 0 1-2.9 3.8M6.5 6.9A16.4 16.4 0 0 0 2.5 12S6 18.5 12 18.5a9.7 9.7 0 0 0 4.1-1" />
+    <path d="M9.9 9.9a2.75 2.75 0 0 0 3.9 3.9" />
+  </svg>
+);
