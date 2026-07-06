@@ -1,0 +1,43 @@
+/**
+ * Centralised, validated environment access. Fail fast and loud if a required
+ * variable is missing rather than producing confusing runtime errors later.
+ *
+ * Public (NEXT_PUBLIC_*) values are safe in the browser. `serverEnv()` reads the
+ * service-role key and MUST only ever be called in server-only modules; it is
+ * never imported by a client component.
+ */
+
+function required(name: string, value: string | undefined): string {
+  if (!value || value.length === 0) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+export const publicEnv = {
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+  feedWsUrl: process.env.NEXT_PUBLIC_FEED_WS_URL ?? "ws://localhost:4001",
+};
+
+/** Validated public env — throws if the two required public vars are absent. */
+export function requirePublicEnv() {
+  return {
+    supabaseUrl: required("NEXT_PUBLIC_SUPABASE_URL", publicEnv.supabaseUrl),
+    supabaseAnonKey: required("NEXT_PUBLIC_SUPABASE_ANON_KEY", publicEnv.supabaseAnonKey),
+    feedWsUrl: publicEnv.feedWsUrl,
+  };
+}
+
+/** Server-only. The HTTP base the trade action hits to revalidate price. */
+export function feedHttpBase(): string {
+  const ws = publicEnv.feedWsUrl;
+  return ws.replace(/^ws/, "http");
+}
+
+/** Server-only secrets. Never import the result into a client bundle. */
+export function serverEnv() {
+  return {
+    serviceRoleKey: required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY),
+  };
+}

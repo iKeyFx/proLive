@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/*
+ * ──────────────────────────────────────────────────────────────────────────
+ * Precision Instrument — design tokens
+ * Base is warm graphite (never pure black). Green/red are reserved exclusively
+ * for market direction; amber (--signal) is the only interactive/brand accent
+ * and is forbidden from market data so it never competes with the tape.
+ * ──────────────────────────────────────────────────────────────────────────
+ */
+:root {
+  --ink-900: #0e1113; /* app background — warm graphite */
+  --ink-800: #161a1d; /* panels / cards */
+  --ink-700: #1f2529; /* raised surfaces, hover */
+  --line: #2a3036; /* hairline borders / dividers */
+  --text-hi: #eceff1; /* primary text — 15.7:1 on ink-900 */
+  --text-lo: #97a1a8; /* secondary / labels — nudged up to clear AA (was #8B959C) */
+  --up: #3fb68b; /* market up — desaturated, not acid */
+  --down: #e5604d; /* market down */
+  --signal: #e2b341; /* brand / interactive accent — amber, never market data */
+
+  /* derived */
+  --up-wash: rgba(63, 182, 139, 0.12); /* 300ms tick flash fill */
+  --down-wash: rgba(229, 96, 77, 0.12);
+  --signal-wash: rgba(226, 179, 65, 0.12);
+  --focus: #e2b341;
+
+  --radius: 5px; /* restrained 4–6px */
+  --tape-settle: 300ms;
+}
+
+/* Map tokens into Tailwind's theme so utilities like bg-ink-800 / text-up work. */
+@theme inline {
+  --color-ink-900: var(--ink-900);
+  --color-ink-800: var(--ink-800);
+  --color-ink-700: var(--ink-700);
+  --color-line: var(--line);
+  --color-text-hi: var(--text-hi);
+  --color-text-lo: var(--text-lo);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-signal: var(--signal);
+
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 5px;
+  --radius-lg: 6px;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--ink-900);
+  color: var(--text-hi);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* All numeric data is tabular by default when this class is applied. */
+.tnum {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.01em;
+}
+
+/* Visible, consistent keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Live-tape signature ─────────────────────────────────────────────────
+ * On tick, a thin direction-colored underline sweeps in then fades over the
+ * settle window, and the cell gets a brief low-alpha wash. Digits roll via the
+ * <DigitRoll> component. Under reduced-motion (below) it all becomes instant.
+ */
+@keyframes tape-flash-up {
+  0% { background-color: var(--up-wash); }
+  100% { background-color: transparent; }
+}
+@keyframes tape-flash-down {
+  0% { background-color: var(--down-wash); }
+  100% { background-color: transparent; }
+}
+@keyframes tape-underline {
+  0% { transform: scaleX(0); opacity: 1; }
+  60% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+.tape-flash-up { animation: tape-flash-up var(--tape-settle) ease-out; }
+.tape-flash-down { animation: tape-flash-down var(--tape-settle) ease-out; }
+
+.tape-underline {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: 100%;
+  transform-origin: left center;
+}
+.tape-underline-up { background: var(--up); animation: tape-underline var(--tape-settle) ease-out; }
+.tape-underline-down { background: var(--down); animation: tape-underline var(--tape-settle) ease-out; }
+
+/* Digit roll — each cell shows a column of 0-9 translated to the active digit. */
+.digit-cell {
+  display: inline-block;
+  overflow: hidden;
+  height: 1em;
+  line-height: 1em;
+  vertical-align: bottom;
+}
+.digit-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--tape-settle) cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ── Reduced motion: every signature animation collapses to instant ────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .digit-track {
+    transition: none !important;
+  }
+}
+
+/* Skeleton shimmer for loading states (still respects reduced-motion above). */
+@keyframes skeleton {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+.skeleton {
+  background: var(--ink-700);
+  border-radius: var(--radius-sm);
+  animation: skeleton 1.4s ease-in-out infinite;
+}
