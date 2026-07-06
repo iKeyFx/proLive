@@ -155,9 +155,8 @@ export async function placeTrade(rawInput: TradeInput): Promise<TradeResult> {
       p_new_qty: newQty,
       p_new_basis: newBasis,
     };
-    // …then handed to rpc with one localized cast: postgrest-js's RPC arg
-    // inference doesn't resolve against a hand-authored Database type (it
-    // defaults Args to `never`). Runtime is unaffected; the object above is typed.
+    // …then one localized cast: postgrest-js can't infer RPC args from a
+    // hand-authored Database type. Runtime is unaffected; `params` is typed.
     const { data, error } = (await supabase.rpc("apply_trade", params as never)) as {
       data: { order_id: string; status: string }[] | null;
       error: { message: string } | null;

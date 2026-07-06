@@ -71,10 +71,8 @@ export const accountSlice = createSlice({
       }
     },
 
-    /**
-     * Optimistic apply: stash a rollback snapshot, then mutate cash + holding so
-     * the UI reflects the trade instantly. Confirmed or reverted by the action.
-     */
+    // Optimistic apply: stash a rollback snapshot, then mutate cash + holding
+    // so the UI reflects the trade instantly. Committed or reverted by the action.
     optimisticApply(
       state,
       action: PayloadAction<{

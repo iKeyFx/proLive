@@ -1,9 +1,9 @@
 import "server-only";
 
 /**
- * Minimal in-memory sliding-window rate limiter. Adequate for a single-instance
- * demo; in a multi-instance deployment swap the Map for Redis/Upstash (same
- * interface). Used to blunt auth brute-force and order-submission abuse.
+ * In-memory sliding-window rate limiter for auth and order submission.
+ * Per-instance; swap the Map for Redis/Upstash (same interface) if scaling
+ * beyond one instance.
  */
 interface Window {
   count: number;

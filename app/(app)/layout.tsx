@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <FeedProvider>
         <ToastProvider>
           <AccountSync userId={loaded.userId} />
-          <Shell email={loaded.email}>{children}</Shell>
+          <Shell>{children}</Shell>
         </ToastProvider>
       </FeedProvider>
     </StoreProvider>

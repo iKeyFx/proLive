@@ -6,10 +6,7 @@ import { selectCell } from "@/lib/store/selectors";
 import { formatPercent } from "@/lib/money";
 import { ArrowUp, ArrowDown, DashIcon } from "@/components/icons";
 
-/**
- * 24h change vs the session open. Direction is encoded by BOTH colour and an
- * arrow glyph + sign, so it remains distinguishable without colour (a11y).
- */
+/** 24h change vs open — encoded by colour AND arrow glyph + sign (a11y). */
 export const ChangePill = memo(function ChangePill({
   symbol,
   showValue = true,

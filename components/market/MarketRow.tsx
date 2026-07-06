@@ -7,9 +7,8 @@ import { ChangePill } from "@/components/market/ChangePill";
 import { Sparkline } from "@/components/market/Sparkline";
 
 /**
- * One watchlist row. Each sub-component subscribes to its own slice of price
- * state, so a tick on this symbol updates only this row's price/change/spark —
- * never the whole table. Keyboard-operable: focusable, Enter/Space opens detail.
+ * One watchlist row; sub-components subscribe to their own price slice so a
+ * tick updates this row only. Keyboard-operable (Enter/Space opens detail).
  */
 export const MarketRow = memo(function MarketRow({
   symbol,

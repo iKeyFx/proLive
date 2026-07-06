@@ -9,15 +9,10 @@ interface FeedHandlers {
 }
 
 /**
- * Subscription layer between the WebSocket and Redux.
- *
- * Performance: raw ticks are NOT dispatched individually. They land in a pending
- * map (latest price per symbol wins) and are flushed as a single batch on the
- * next animation frame via `onTicks`. This caps store updates at one per frame
- * regardless of feed rate, so the UI never thrashes.
- *
- * Resilience: on drop, reconnect with exponential backoff + jitter (capped),
- * surfacing 'reconnecting' so the UI can degrade to last-known prices.
+ * LEGACY — not used by the app. The production feed is the deterministic
+ * in-process model (lib/feed/price-model.ts). Kept as the WebSocket variant:
+ * rAF tick coalescing (pending map, one flush per frame) and auto-reconnect
+ * with capped exponential backoff + jitter. Pairs with scripts/simulator.ts.
  */
 export class FeedClient {
   private url: string;

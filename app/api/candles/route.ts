@@ -37,7 +37,9 @@ export async function GET(request: Request) {
   const { stepSec, count } = TF[tf]!;
 
   const nowSec = Math.floor(Date.now() / 1000);
-  const startSec = nowSec - stepSec * (count - 1);
+  // Buckets span [t0, t0+step]; start one full step back so the FINAL candle's
+  // t1 lands exactly on nowSec — no sample is ever taken from the future.
+  const startSec = nowSec - stepSec * count;
   const SUBSAMPLES = 6; // intra-bucket points → realistic wicks
 
   const candles = Array.from({ length: count }, (_, i) => {

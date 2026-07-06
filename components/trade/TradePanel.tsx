@@ -51,8 +51,8 @@ export function TradePanel({ symbol, name }: { symbol: string; name: string }) {
       ? tradeCost(kobo(priceKobo), qtyMicro(qtyMicroVal))
       : 0;
 
-  // Validation — mirrors the server's checks for instant feedback (the server
-  // remains the source of truth and re-validates against the authoritative price).
+  // Mirrors the server's checks for instant feedback; the server re-validates
+  // against the authoritative price and remains the source of truth.
   const validation = useMemo(() => {
     if (qtyMicroVal === null) return { ok: false, msg: "Enter a quantity above zero." };
     if (priceKobo <= 0) return { ok: false, msg: "Waiting for a live price…" };

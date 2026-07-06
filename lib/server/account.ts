@@ -12,15 +12,12 @@ type OrderPick = Pick<
 
 export interface LoadedAccount {
   userId: string;
-  email: string;
   account: InitialAccount;
 }
 
 /**
- * Loads the signed-in user's account, holdings, and recent ledger — server-side,
- * under RLS. Returns only the fields the UI needs (least exposure). The explicit
- * user_id filters are redundant given RLS but make intent obvious and keep the
- * query tight.
+ * Loads the signed-in user's account, holdings, and recent ledger under RLS.
+ * Returns only the fields the UI needs (least exposure).
  */
 export async function loadAccount(): Promise<LoadedAccount | null> {
   const supabase = await createClient();
@@ -51,7 +48,6 @@ export async function loadAccount(): Promise<LoadedAccount | null> {
 
   return {
     userId: user.id,
-    email: user.email ?? "",
     account: {
       cashKobo: cash,
       holdings: holdings.map((h) => ({

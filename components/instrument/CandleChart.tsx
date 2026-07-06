@@ -46,7 +46,6 @@ export function CandleChart({ symbol }: { symbol: string }) {
   const cell = useAppSelector(selectCell(symbol));
   const livePriceNaira = cell ? cell.price / KOBO_PER_NAIRA : null;
 
-  // Create the chart once.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;

@@ -5,11 +5,9 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 import { publicEnv } from "@/lib/env";
 
 /**
- * Runs on every matched request. It (a) refreshes the Supabase session cookie so
- * server components always see a valid session, and (b) guards the app: any
- * unauthenticated request to a protected route is redirected to /login before
- * any protected data is fetched. Auth is enforced here AND by RLS at the DB —
- * defence in depth.
+ * Refreshes the Supabase session cookie and guards protected routes: an
+ * unauthenticated request is redirected to /login before any data is fetched.
+ * Auth is enforced here AND by RLS at the database — defence in depth.
  */
 const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
 

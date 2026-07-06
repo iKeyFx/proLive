@@ -1,8 +1,4 @@
-/**
- * Wordmark — a small engraved-gauge mark + "ProLive" set in the display face.
- * The mark is a precision tick-ring: a circle with graduated ticks, echoing an
- * instrument dial rather than a generic logo.
- */
+/** Precision-gauge mark + "ProLive" in the display face. */
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-2 select-none">
