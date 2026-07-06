@@ -1,26 +1,16 @@
 import "server-only";
-import { feedHttpBase } from "@/lib/env";
+import { priceAt } from "@/lib/feed/price-model";
+import { isKnownSymbol } from "@/lib/instruments";
 
 /**
- * Server-side authoritative price read. The trade action calls this and uses the
- * returned price to compute cost — the browser's claimed price is never trusted.
- * Short timeout + no caching so we always execute against a fresh price.
+ * The authoritative price used to execute a trade. The server computes it from
+ * the deterministic model at the moment of execution — it never trusts the
+ * price the browser sent. Because the model is a pure function of time, this
+ * value is exactly what the client is displaying (± a tick), yet it is derived
+ * independently on the server, so a spoofed client price is simply ignored.
  */
-export async function fetchAuthoritativePrice(symbol: string): Promise<number | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 1500);
-  try {
-    const res = await fetch(`${feedHttpBase()}/prices`, {
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!res.ok) return null;
-    const body = (await res.json()) as { prices?: Record<string, number> };
-    const price = body.prices?.[symbol];
-    return typeof price === "number" && Number.isFinite(price) && price > 0 ? price : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
+export function authoritativePrice(symbol: string): number | null {
+  if (!isKnownSymbol(symbol)) return null;
+  const price = priceAt(symbol, Date.now());
+  return price > 0 ? price : null;
 }

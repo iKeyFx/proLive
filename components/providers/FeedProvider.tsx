@@ -1,43 +1,42 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAppDispatch, useAppStore } from "@/lib/store/hooks";
+import { useAppDispatch } from "@/lib/store/hooks";
 import { applyTicks, setStatus, snapshot } from "@/lib/store/pricesSlice";
-import { FeedClient } from "@/lib/realtime/feed-client";
-import { publicEnv } from "@/lib/env";
+import { buildSnapshot, tickAll } from "@/lib/feed/price-model";
 
-const STALE_AFTER_MS = 6000;
+// How often the tape refreshes. Driven by requestAnimationFrame (so it pauses
+// when the tab is hidden), throttled to this cadence — one coalesced dispatch
+// per interval keeps the store cheap and the render granular.
+const TICK_MS = 300;
 
 /**
- * Mounts the price feed for the app subtree. Dispatches snapshots and rAF-batched
- * tick batches, and degrades to 'stale' if the socket goes quiet while nominally
- * connected (so the UI flags last-known prices instead of lying). A fresh tick
- * flips status back to 'live' automatically.
+ * Mounts the local price feed. Prices come from the deterministic time model, so
+ * there is no socket to manage — the browser simply evaluates the same function
+ * the server uses, on an rAF loop. A single `applyTicks` dispatch per interval
+ * updates only the cells whose price changed.
  */
 export function FeedProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
-  const store = useAppStore();
 
   useEffect(() => {
-    const client = new FeedClient(publicEnv.feedWsUrl, {
-      onSnapshot: (msg) => dispatch(snapshot(msg)),
-      onTicks: (updates) => dispatch(applyTicks(updates)),
-      onStatus: (status) => dispatch(setStatus(status)),
-    });
-    client.connect();
+    // Immediate snapshot so the UI renders real data on first paint.
+    dispatch(snapshot(buildSnapshot(Date.now())));
+    dispatch(setStatus("live"));
 
-    const watchdog = setInterval(() => {
-      const { status, lastMessageTs } = store.getState().prices;
-      if (status === "live" && lastMessageTs > 0 && Date.now() - lastMessageTs > STALE_AFTER_MS) {
-        dispatch(setStatus("stale"));
+    let raf = 0;
+    let last = 0;
+    const loop = (ts: number) => {
+      if (ts - last >= TICK_MS) {
+        last = ts;
+        dispatch(applyTicks(tickAll(Date.now())));
       }
-    }, 2000);
-
-    return () => {
-      clearInterval(watchdog);
-      client.close();
+      raf = requestAnimationFrame(loop);
     };
-  }, [dispatch, store]);
+    raf = requestAnimationFrame(loop);
+
+    return () => cancelAnimationFrame(raf);
+  }, [dispatch]);
 
   return <>{children}</>;
 }

@@ -17,27 +17,26 @@ Three things were held above all else, in order:
 
 Next.js (App Router) · TypeScript (strict) · Tailwind CSS v4 · Redux Toolkit
 (normalized) · Supabase (Postgres + Auth + RLS + Realtime) · Lightweight Charts ·
-an in-house WebSocket price simulator.
+a deterministic in-process price model (no external feed, no always-on process —
+deploys anywhere Next.js runs, including Vercel's free tier).
 
 ---
 
 ## Architecture
 
 ```
-                          ┌───────────────────────────────────────────┐
-   price simulator        │                 BROWSER                   │
-   (scripts/simulator.ts) │                                           │
-   random-walk, kobo      │   FeedClient ──rAF coalesce──► Redux      │
-        │   ▲             │   (WebSocket)                 (normalized  │
-        │   │ GET /prices │                                by symbol)  │
-   WS   │   │ (server     │       │ granular selectors        ▲        │
-  ──────┼───┼─ trusts     │       ▼                           │        │
-        │   │  this, not  │   PriceTape / Watchlist / Chart   │        │
-        ▼   │  the client)│                                   │        │
-   ┌────────┴───┐         │   TradePanel ──optimistic apply──►┘        │
-   │  Next.js   │         └───────────┬───────────────────────────────┘
-   │  server    │                     │ server action (validated, idempotent)
-   │  actions   │◄────────────────────┘
+   lib/feed/price-model.ts   ┌───────────────────────────────────────────┐
+   priceAt(symbol, t)        │                 BROWSER                   │
+   pure fn of time → kobo    │   FeedProvider ──rAF coalesce──► Redux     │
+        │  (same fn          │   (local ticker)               (normalized │
+        │   both sides)      │       │ granular selectors      by symbol)  │
+        ├───────────────────►│       ▼                           ▲        │
+        │                    │   PriceTape / Watchlist / Chart   │        │
+        │                    │                                   │        │
+   ┌────┴───────┐            │   TradePanel ──optimistic apply──►┘        │
+   │  Next.js   │            └───────────┬───────────────────────────────┘
+   │  server    │  priceAt(sym, now())   │ server action (validated, idempotent)
+   │  actions   │◄───────────────────────┘
    └─────┬──────┘   recompute cost with lib/money @ authoritative price
          │ RPC apply_trade (atomic, RLS, optimistic-concurrency, idempotency)
          ▼
@@ -47,22 +46,30 @@ an in-house WebSocket price simulator.
    └──────────────────────────────────────────────┘
 ```
 
-- **One-way price flow.** Simulator → WebSocket → client. Prices are *display
-  data*, never persisted truth.
+- **Prices are a pure function of time.** `priceAt(symbol, t)` (a seeded blend of
+  sine waves) is evaluated by the browser on an rAF loop to animate, and *the same
+  function* is evaluated by the server at execution time to get an authoritative
+  price. No socket, no shared state — yet the server independently agrees with the
+  client, which is exactly what lets it reject a spoofed client price for free.
+  Prices are *display data*, never persisted truth.
 - **Persisted truth in Postgres.** Accounts, holdings, and an append-only order
   ledger — mutated only through validated, idempotent server actions / RPC.
 - **Derived portfolio.** Value = Σ(qty × live price), computed client-side;
   holdings & cash sync across tabs via Supabase Realtime.
+
+> A legacy WebSocket variant (a real streaming feed with backoff-reconnect) lives
+> in `scripts/simulator.ts` + `lib/realtime/feed-client.ts`, kept for reference.
+> The app uses the deterministic model so it needs no always-on process.
 
 ### Module map
 
 | Path | Responsibility |
 |---|---|
 | `lib/money` | Integer-kobo money math + rounding policy (unit-tested) |
-| `lib/realtime/feed-client.ts` | WebSocket + rAF tick coalescing + backoff reconnect |
+| `lib/feed/price-model.ts` | Deterministic `priceAt(symbol, t)` — used by client & server (unit-tested) |
 | `lib/store` | Normalized Redux store, granular selectors |
 | `lib/instruments.ts` | The single allow-list of tradable symbols |
-| `scripts/simulator.ts` | In-house price feed (WS + `/prices` for server revalidation) |
+| `components/providers/FeedProvider.tsx` | Client rAF ticker that feeds the store |
 | `supabase/migrations/0001_init.sql` | Schema, **RLS policies**, `apply_trade` RPC, reset/delete |
 | `app/(app)/trade/actions.ts` | The validated, idempotent, race-safe trade server action |
 
@@ -71,14 +78,14 @@ an in-house WebSocket price simulator.
 ## The three hard problems
 
 ### 1. Streaming without jank
-The naive approach — dispatch every tick into Redux — repaints the world dozens
-of times a second. Instead `FeedClient` drops incoming ticks into a pending map
-(latest price per symbol wins) and flushes them as **one batch per animation
-frame**. The store is normalized by symbol, and because Immer structurally shares
-unchanged cells, a `bySymbol[symbol]` selector produces a new reference **only**
-when that symbol moved. Net result: one ticking symbol re-renders one price cell,
-not the table. The signature live tape rolls each digit like a mechanical counter
-and settles in ~300 ms.
+The naive approach — push a store update per symbol per tick — repaints the world
+dozens of times a second. Instead the feed evaluates all prices and dispatches
+**one coalesced batch per animation frame** (`requestAnimationFrame`, so it also
+pauses when the tab is hidden). The store is normalized by symbol, and because
+Immer structurally shares unchanged cells, a `bySymbol[symbol]` selector produces
+a new reference **only** when that symbol moved. Net result: one ticking symbol
+re-renders one price cell, not the table. The signature live tape rolls each digit
+like a mechanical counter and settles in ~300 ms.
 
 ### 2. Money correctness
 Every monetary value is an **integer in kobo**; quantities are integer
@@ -126,19 +133,35 @@ cp .env.example .env.local        # then fill in your Supabase URL + keys
 # 4. (optional) seed a demo user with sample holdings
 npm run seed                      # demo@prolive.test / prolive-demo-1234
 
-# 5. run web + price feed together
+# 5. run the app (no separate feed process — prices are computed in-process)
 npm run dev
 ```
 
-- Web: http://localhost:3000 · Price feed: ws://localhost:4001
-- `npm test` runs the money/reconciliation unit tests.
+- Web: http://localhost:3000
+- `npm test` runs the money/reconciliation + price-model unit tests.
 - `npm run build` is a clean production build.
 
 ### Environment
 
-See [.env.example](.env.example). The browser receives only
+See [.env.example](.env.example) — just three values. The browser receives only
 `NEXT_PUBLIC_SUPABASE_ANON_KEY`; `SUPABASE_SERVICE_ROLE_KEY` is server-only and
 never shipped to the client. No secrets live in the repo.
+
+---
+
+## Deploy (Vercel — free, always-on)
+
+Because prices are computed in-process, the whole app is a single Next.js
+deployment plus a Supabase project — no always-on price server to host.
+
+1. **Supabase:** run `supabase/migrations/0001_init.sql`; disable "Confirm email"
+   in Auth; set the Site URL / redirect URL to your Vercel domain once you have it.
+2. **Vercel:** import the GitHub repo and set three env vars —
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY`. Deploy.
+3. Optionally `npm run seed` against the prod project for demo data.
+
+That's it — no `NEXT_PUBLIC_FEED_WS_URL`, no worker, no cron.
 
 ---
 

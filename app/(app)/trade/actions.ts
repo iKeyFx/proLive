@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { fetchAuthoritativePrice } from "@/lib/server/price";
+import { authoritativePrice } from "@/lib/server/price";
 import { rateLimit, sweepExpired } from "@/lib/rate-limit";
 import { isKnownSymbol } from "@/lib/instruments";
 import type { Database } from "@/lib/supabase/types";
@@ -76,8 +76,8 @@ export async function placeTrade(rawInput: TradeInput): Promise<TradeResult> {
     return { ok: false, code: "rate_limited", message: "Slow down — too many orders. Try again shortly." };
   }
 
-  // Authoritative price — server-fetched, never the client's number.
-  const price = await fetchAuthoritativePrice(symbol);
+  // Authoritative price — server-computed from the model, never the client's.
+  const price = authoritativePrice(symbol);
   if (price === null) {
     return { ok: false, code: "price_unavailable", message: "Price feed unavailable. Try again in a moment." };
   }

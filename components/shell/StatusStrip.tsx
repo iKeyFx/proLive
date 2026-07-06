@@ -28,7 +28,7 @@ function ConnectionDot() {
         )}
         <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: meta.color }} />
       </span>
-      <span className="text-xs text-text-lo">{meta.label}</span>
+      <span className="hidden text-xs text-text-lo sm:inline">{meta.label}</span>
     </span>
   );
 }
@@ -58,14 +58,16 @@ function TotalValue() {
   const color = up ? "text-up" : down ? "text-down" : "text-text-lo";
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex flex-col items-end leading-tight">
+    <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+      <div className="flex min-w-0 flex-col items-end leading-tight">
         <span className="text-[10px] uppercase tracking-wider text-text-lo">Total value</span>
-        <span className="tnum text-sm font-medium text-text-hi">{formatNaira(kobo(totals.totalKobo))}</span>
+        <span className="tnum truncate text-sm font-medium text-text-hi">
+          {formatNaira(kobo(totals.totalKobo))}
+        </span>
       </div>
-      <div className={`flex items-center gap-1 ${color}`}>
+      <div className={`flex shrink-0 items-center gap-1 ${color}`}>
         {up ? <ArrowUp size={13} /> : down ? <ArrowDown size={13} /> : null}
-        <span className="tnum text-sm">{formatSignedNaira(pnl)}</span>
+        <span className="tnum hidden text-sm sm:inline">{formatSignedNaira(pnl)}</span>
         <span className="tnum text-xs opacity-80">({formatPercent(pct)})</span>
       </div>
     </div>
@@ -74,11 +76,13 @@ function TotalValue() {
 
 export function StatusStrip() {
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b border-line bg-ink-900/95 px-4 backdrop-blur md:px-6">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-3 overflow-hidden border-b border-line bg-ink-900/95 px-4 backdrop-blur md:px-6">
+      <div className="flex shrink-0 items-center gap-3">
         <ConnectionDot />
         <span className="hidden h-4 w-px bg-line sm:block" />
-        <Clock />
+        <span className="hidden sm:inline-block">
+          <Clock />
+        </span>
       </div>
       <TotalValue />
     </header>

@@ -17,7 +17,6 @@ function required(name: string, value: string | undefined): string {
 export const publicEnv = {
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-  feedWsUrl: process.env.NEXT_PUBLIC_FEED_WS_URL ?? "ws://localhost:4001",
 };
 
 /** Validated public env — throws if the two required public vars are absent. */
@@ -25,14 +24,7 @@ export function requirePublicEnv() {
   return {
     supabaseUrl: required("NEXT_PUBLIC_SUPABASE_URL", publicEnv.supabaseUrl),
     supabaseAnonKey: required("NEXT_PUBLIC_SUPABASE_ANON_KEY", publicEnv.supabaseAnonKey),
-    feedWsUrl: publicEnv.feedWsUrl,
   };
-}
-
-/** Server-only. The HTTP base the trade action hits to revalidate price. */
-export function feedHttpBase(): string {
-  const ws = publicEnv.feedWsUrl;
-  return ws.replace(/^ws/, "http");
 }
 
 /** Server-only secrets. Never import the result into a client bundle. */
