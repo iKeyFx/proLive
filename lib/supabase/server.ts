@@ -6,10 +6,8 @@ import { requirePublicEnv } from "@/lib/env";
 import type { Database } from "@/lib/supabase/types";
 
 /**
- * Server Supabase client bound to the request's cookies. Runs under the user's
- * session so RLS + auth.uid() apply to every query — the server never bypasses
- * row security for ordinary reads/writes. Use in Server Components, Route
- * Handlers, and Server Actions.
+ * Server Supabase client bound to the request's cookies — runs under the
+ * user's session, so RLS + auth.uid() apply to every query.
  */
 export async function createClient() {
   const { supabaseUrl, supabaseAnonKey } = requirePublicEnv();

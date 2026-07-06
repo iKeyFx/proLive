@@ -5,11 +5,8 @@ import { marketValue, unrealizedPnl, kobo, qtyMicro } from "@/lib/money";
 // ── Prices ───────────────────────────────────────────────────────────────────
 export const selectStatus = (s: RootState) => s.prices.status;
 
-/**
- * Selecting a single cell: Immer structurally shares unchanged cells, so this
- * reference changes ONLY when `symbol` ticked — a component subscribed to it
- * re-renders for its own symbol and nothing else.
- */
+// Immer structurally shares unchanged cells, so this reference changes ONLY
+// when `symbol` ticked — a subscriber re-renders for its own symbol and nothing else.
 export const selectCell = (symbol: string) => (s: RootState) => s.prices.bySymbol[symbol];
 
 export const selectSpark = (symbol: string) => (s: RootState) => s.prices.spark[symbol];

@@ -1,25 +1,17 @@
 /**
  * lib/money — the single source of truth for monetary arithmetic.
  *
- * RULES (enforced by convention + branded types):
- *  1. Every monetary value is an INTEGER in minor units (kobo). 1 naira = 100 kobo.
- *     Floating-point money is forbidden everywhere in the app.
- *  2. Quantities may be fractional, so they are stored as INTEGER micro-units
- *     (QTY_SCALE = 1e6). 1.5 units === 1_500_000 micro-units.
- *  3. We never store a *rounded average price*. We store the integer cost basis
- *     (sum of kobo actually paid) and the integer quantity. The average entry is
- *     a derived display value: costBasis / qty. This means no rounding drift can
- *     ever accumulate in storage — sums are exact.
+ * Rules: (1) all money is an INTEGER in kobo — floats are forbidden;
+ * (2) quantities are integer micro-units (1e6 = 1.0 unit); (3) we store the
+ * exact integer cost basis, never a rounded average — the average entry is
+ * derived for display, so no rounding drift can accumulate in storage.
  *
- * ROUNDING POLICY (the one place division happens):
- *   `divRound` rounds half AWAY FROM ZERO ("commercial rounding"). It is applied
- *   only when converting price × quantity into integer kobo, and when
- *   apportioning cost basis on a partial sell. The rounded result *is* the
- *   recorded value, so reconciliation (cash delta === recorded cost) is exact by
- *   construction. We document this rather than hide it.
+ * Rounding policy: `divRound` rounds half away from zero, applied only when
+ * converting price × qty to kobo and when apportioning basis on a partial
+ * sell. The rounded result IS the recorded value, so cash reconciles exactly.
  */
 
-// ── Branded types — make it a compile error to mix kobo with raw numbers ────
+// Branded types — mixing kobo with raw numbers is a compile error.
 export type Kobo = number & { readonly __brand: "Kobo" };
 /** Quantity in micro-units (1e6 == 1.0 unit). Integer. */
 export type QtyMicro = number & { readonly __brand: "QtyMicro" };

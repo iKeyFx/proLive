@@ -1,13 +1,9 @@
 import type { NextConfig } from "next";
 
 /**
- * Security headers applied to every response.
- *
- * The Content-Security-Policy is intentionally strict. `connect-src` allows only
- * the Supabase project origin (REST + realtime socket); nothing else may open a
- * socket or fetch. Prices are computed in-process from a deterministic model, so
- * no price feed origin is whitelisted. We self-host fonts (next/font) so no font
- * CDN is needed. `frame-ancestors 'none'` + X-Frame-Options block clickjacking.
+ * Security headers for every response. The CSP is strict: `connect-src` allows
+ * only the Supabase origin (REST + realtime socket) — prices are computed
+ * in-process and fonts are self-hosted, so nothing else may fetch or connect.
  */
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 

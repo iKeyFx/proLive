@@ -1,17 +1,10 @@
 /**
- * In-house price simulator.
+ * LEGACY — not used by the app. The production feed is the deterministic
+ * in-process model (lib/feed/price-model.ts). This is the original WebSocket
+ * random-walk streamer (snapshot + coalesced ticks over WS, GET /prices for
+ * server-side revalidation, GET /health). Pairs with lib/realtime/feed-client.ts.
  *
- * A server-side random-walk streamer. Owns no truth: it only produces *display*
- * prices in integer kobo. It exposes two surfaces on one port:
- *   • WebSocket  — the browser subscribes; gets a snapshot then coalesced ticks.
- *   • GET /prices — the Next.js server fetches this to revalidate price at trade
- *     execution. The browser's claimed price is NEVER trusted; this is the
- *     authoritative read used to recompute cost server-side.
- *   • GET /health — liveness.
- *
- * Run standalone:  node --import tsx scripts/simulator.ts
- * (relative imports + `import type` in shared modules keep this free of the
- *  Next.js "@/" path alias, so it runs as a plain Node process.)
+ * Run standalone:  npm run dev:feed
  */
 import { createServer } from "node:http";
 import { WebSocketServer, WebSocket } from "ws";

@@ -4,10 +4,8 @@ import { requirePublicEnv, serverEnv } from "@/lib/env";
 import type { Database } from "@/lib/supabase/types";
 
 /**
- * Service-role client. Bypasses RLS — SERVER ONLY. The `server-only` import
- * above makes it a build error to pull this into a client bundle. Used solely
- * by the seed script and trusted admin paths, never to serve user requests
- * (those go through the RLS-bound server client).
+ * Service-role client — bypasses RLS, SERVER ONLY (`server-only` makes client
+ * bundling a build error). Never used to serve user requests.
  */
 export function createServiceClient() {
   const { supabaseUrl } = requirePublicEnv();

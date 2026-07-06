@@ -5,6 +5,11 @@ market prices, place simulated trades, and track a portfolio with accurate, live
 profit/loss. **No real money — but every money calculation behaves as if it
 were.**
 
+> **Try it — demo account**
+> Email `demo@prolive.test` · Password `prolive-demo-1234`
+> (comes pre-loaded with holdings; or create your own account — every new
+> account starts with ₦5,000,000 in simulated cash)
+
 Three things were held above all else, in order:
 
 1. **Money is always correct** — integer minor units end-to-end, no float drift, rounding tested.
@@ -159,9 +164,10 @@ deployment plus a Supabase project — no always-on price server to host.
 2. **Vercel:** import the GitHub repo and set three env vars —
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
    `SUPABASE_SERVICE_ROLE_KEY`. Deploy.
-3. Optionally `npm run seed` against the prod project for demo data.
+3. Run `npm run seed` (with prod values in `.env.local`) to create the demo
+   account (`demo@prolive.test` / `prolive-demo-1234`) with sample holdings.
 
-That's it — no `NEXT_PUBLIC_FEED_WS_URL`, no worker, no cron.
+That's it — no feed server, no worker, no cron.
 
 ---
 

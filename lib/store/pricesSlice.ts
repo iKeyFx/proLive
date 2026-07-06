@@ -4,18 +4,14 @@ import type { SnapshotMessage } from "@/lib/feed/types";
 export type ConnectionStatus = "connecting" | "live" | "reconnecting" | "stale";
 
 export interface PriceCell {
-  /** Current price, kobo (int). */
+  /** Current price, kobo. */
   price: number;
-  /** Previous price, kobo — drives the direction flash. */
+  /** Previous price — drives the direction flash. */
   prev: number;
-  /** Session open (24h ref), kobo. */
+  /** Session open (24h reference), kobo. */
   open: number;
-  /** Epoch millis of last update. */
   ts: number;
-  /**
-   * Monotonic revision; bumped on every applied change. Cells subscribe to this
-   * so a component re-renders only when *its* symbol actually moved.
-   */
+  /** Monotonic revision — keys the tape animation replay per tick. */
   rev: number;
 }
 

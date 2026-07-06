@@ -1,15 +1,9 @@
 /**
- * Deterministic price model — the backbone of the serverless design.
- *
- * A price is a PURE FUNCTION of (symbol, time): a per-symbol blend of sine waves
- * (slow trend + medium swing + fast flicker) around the instrument's seed price.
- * It looks like a live random walk but needs no server, no socket, and no shared
- * state — the browser evaluates it on a timer to animate, and the server
- * evaluates the SAME function at `Date.now()` to get an authoritative price it
- * can trust. That independent agreement is exactly what lets the server reject a
- * spoofed client price with zero infrastructure.
- *
- * All prices are integer kobo. Display data only — never persisted truth.
+ * Deterministic price model: price is a pure function of (symbol, time) — a
+ * per-symbol blend of sine waves around the seed price. The browser evaluates
+ * it to animate; the server evaluates the SAME function at execution time for
+ * an authoritative price, so a spoofed client price is rejected with zero
+ * infrastructure. Integer kobo; display data only, never persisted truth.
  */
 import { INSTRUMENTS, getInstrument } from "@/lib/instruments";
 import type { SnapshotMessage, PricePoint } from "@/lib/feed/types";

@@ -12,10 +12,9 @@ import {
 import type { AccountRow, HoldingRow, OrderRow } from "@/lib/supabase/types";
 
 /**
- * Keeps the local account mirror in lock-step with the database across tabs.
- * Subscribes to postgres changes on the user's own rows (RLS guarantees we only
- * receive our own events) and folds them into the store. This is what makes a
- * trade placed in one tab appear in another without a refresh.
+ * Cross-tab sync: subscribes to postgres changes on the user's own rows (RLS
+ * scopes the events) and folds them into the store, so a trade placed in one
+ * tab appears in another without a refresh.
  */
 export function AccountSync({ userId }: { userId: string }) {
   const dispatch = useAppDispatch();

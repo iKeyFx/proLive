@@ -15,12 +15,8 @@ interface SortState {
   dir: SortDir;
 }
 
-/**
- * Sorting recomputes on a gentle cadence (and immediately on user change) rather
- * than every tick — rows still update their prices live in place, but the table
- * doesn't reorder on every frame, which would be jarring. Sort choice persists
- * to localStorage.
- */
+// Rows update live in place, but the table reorders only on this calm cadence
+// (and immediately on user change) so it never thrashes. Sort persists locally.
 const RESORT_MS = 1500;
 
 function orderSymbols(

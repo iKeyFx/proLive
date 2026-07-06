@@ -1,10 +1,7 @@
 /**
- * Centralised, validated environment access. Fail fast and loud if a required
- * variable is missing rather than producing confusing runtime errors later.
- *
- * Public (NEXT_PUBLIC_*) values are safe in the browser. `serverEnv()` reads the
- * service-role key and MUST only ever be called in server-only modules; it is
- * never imported by a client component.
+ * Centralised, validated env access — fail fast if a required variable is
+ * missing. `serverEnv()` reads the service-role key and must only be called
+ * from server-only modules.
  */
 
 function required(name: string, value: string | undefined): string {

@@ -28,7 +28,6 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "ProLive — precision trading desk",
   description: "A real-time trading and portfolio dashboard. Simulated money, real-money correctness.",
-  robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {

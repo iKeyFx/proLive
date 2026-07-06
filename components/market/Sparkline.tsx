@@ -5,9 +5,8 @@ import { useAppSelector } from "@/lib/store/hooks";
 import { selectSpark } from "@/lib/store/selectors";
 
 /**
- * A tiny SVG sparkline of recent prices. Colour reflects net move over the
- * window (up/down/flat). Purely decorative-support, so it's aria-hidden — the
- * numeric change is conveyed by <ChangePill>.
+ * Tiny SVG sparkline of recent prices, coloured by net move. Decorative
+ * (aria-hidden) — the numeric change is conveyed by <ChangePill>.
  */
 export const Sparkline = memo(function Sparkline({
   symbol,

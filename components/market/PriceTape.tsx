@@ -16,12 +16,10 @@ const sizeClass: Record<Size, string> = {
 };
 
 /**
- * The signature element. Subscribes to ONE symbol's price cell — thanks to
- * Immer's structural sharing this component re-renders only when its own symbol
- * ticks. On each tick a thin direction-coloured underline sweeps and a low-alpha
- * wash flashes, both keyed on the cell revision so they replay every tick and
- * settle in ~300ms. Digits roll via <DigitRoll>. The whole thing collapses to an
- * instant swap under prefers-reduced-motion (handled in globals.css).
+ * The signature live tape. Subscribes to one symbol's cell (re-renders only
+ * when that symbol ticks); digits roll and a direction underline sweeps,
+ * keyed on the cell revision. Collapses to an instant swap under
+ * prefers-reduced-motion (globals.css).
  */
 export const PriceTape = memo(function PriceTape({
   symbol,
