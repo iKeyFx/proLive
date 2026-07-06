@@ -22,7 +22,8 @@ export function HistoryView() {
         </div>
       ) : (
         <section className="overflow-hidden rounded-lg border border-line bg-ink-800">
-          <table className="w-full border-collapse text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-[10px] uppercase tracking-wider text-text-lo">
                 <th className="py-2 pl-4 text-left font-normal">Time</th>
@@ -38,15 +39,27 @@ export function HistoryView() {
                 const buy = o.side === "buy";
                 return (
                   <tr key={o.id} className="border-b border-line/60">
-                    <td className="tnum py-2.5 pl-4 text-xs text-text-lo">
-                      {new Date(o.createdAt).toLocaleString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: false,
-                      })}
+                    <td className="tnum whitespace-nowrap py-2.5 pl-4 text-xs text-text-lo">
+                      {/* compact on mobile (no seconds), full timestamp on sm+ */}
+                      <span className="sm:hidden">
+                        {new Date(o.createdAt).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {new Date(o.createdAt).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false,
+                        })}
+                      </span>
                     </td>
                     <td className="px-2 py-2.5 font-display text-sm font-medium text-text-hi">{o.symbol}</td>
                     <td className="px-2 py-2.5">
@@ -64,7 +77,8 @@ export function HistoryView() {
                 );
               })}
             </tbody>
-          </table>
+            </table>
+          </div>
         </section>
       )}
     </div>

@@ -48,7 +48,8 @@ export function PortfolioView() {
         <EmptyPortfolio loaded={loaded} />
       ) : (
         <section className="overflow-hidden rounded-lg border border-line bg-ink-800">
-          <table className="w-full border-collapse text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-[10px] uppercase tracking-wider text-text-lo">
                 <th className="py-2 pl-4 text-left font-normal">Instrument</th>
@@ -64,7 +65,8 @@ export function PortfolioView() {
                 <HoldingRow key={s} symbol={s} name={getInstrument(s)?.name ?? s} />
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </section>
       )}
     </div>
