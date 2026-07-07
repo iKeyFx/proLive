@@ -7,14 +7,22 @@ import { formatNaira, kobo } from "@/lib/money";
 import { resetAccount, deleteAccountData } from "@/app/(app)/trade/actions";
 import { signOut } from "@/app/auth/actions";
 import { useToast } from "@/components/ui/Toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+
+type PendingConfirm = "signout" | "reset" | "delete" | null;
 
 export function AccountView({ email }: { email: string }) {
   const cash = useAppSelector(selectCash);
   const totals = useAppSelector(selectPortfolioTotals);
   const toast = useToast();
   const [pending, startTransition] = useTransition();
-  const [confirmReset, setConfirmReset] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirm, setConfirm] = useState<PendingConfirm>(null);
+
+  const doSignOut = () => {
+    startTransition(async () => {
+      await signOut(); // redirects to /login
+    });
+  };
 
   const doReset = () => {
     startTransition(async () => {
@@ -26,7 +34,7 @@ export function AccountView({ email }: { email: string }) {
       } else {
         toast.show({ tone: "error", title: "Reset failed", detail: r.message });
       }
-      setConfirmReset(false);
+      setConfirm(null);
     });
   };
 
@@ -37,7 +45,7 @@ export function AccountView({ email }: { email: string }) {
         window.location.href = "/login";
       } else {
         toast.show({ tone: "error", title: "Delete failed", detail: r.message });
-        setConfirmDelete(false);
+        setConfirm(null);
       }
     });
   };
@@ -64,30 +72,14 @@ export function AccountView({ email }: { email: string }) {
         <p className="mt-1 text-sm text-text-lo">
           Clears all your holdings and order history and restores your cash to ₦5,000,000. Useful for a clean demo.
         </p>
-        <div className="mt-3 flex items-center gap-2">
-          {confirmReset ? (
-            <>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={doReset}
-                className="rounded-md bg-signal px-3 py-2 text-sm font-medium text-ink-900 hover:opacity-90 disabled:opacity-50"
-              >
-                {pending ? "Resetting…" : "Confirm reset"}
-              </button>
-              <button type="button" onClick={() => setConfirmReset(false)} className="px-3 py-2 text-sm text-text-lo hover:text-text-hi">
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmReset(true)}
-              className="rounded-md border border-line px-3 py-2 text-sm text-text-hi hover:bg-ink-700"
-            >
-              Reset account
-            </button>
-          )}
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setConfirm("reset")}
+            className="rounded-md border border-line px-3 py-2 text-sm text-text-hi hover:bg-ink-700"
+          >
+            Reset account
+          </button>
         </div>
       </section>
 
@@ -97,38 +89,58 @@ export function AccountView({ email }: { email: string }) {
         <p className="mt-1 text-sm text-text-lo">
           Permanently removes your account, holdings, and ledger. This cannot be undone.
         </p>
-        <div className="mt-3 flex items-center gap-2">
-          {confirmDelete ? (
-            <>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={doDelete}
-                className="rounded-md bg-down px-3 py-2 text-sm font-medium text-ink-900 hover:opacity-90 disabled:opacity-50"
-              >
-                {pending ? "Deleting…" : "Yes, delete everything"}
-              </button>
-              <button type="button" onClick={() => setConfirmDelete(false)} className="px-3 py-2 text-sm text-text-lo hover:text-text-hi">
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="rounded-md border border-down/40 px-3 py-2 text-sm text-down hover:bg-down/10"
-            >
-              Delete account
-            </button>
-          )}
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setConfirm("delete")}
+            className="rounded-md border border-down/40 px-3 py-2 text-sm text-down hover:bg-down/10"
+          >
+            Delete account
+          </button>
         </div>
       </section>
 
-      <form action={signOut}>
-        <button type="submit" className="rounded-md border border-line px-3 py-2 text-sm text-text-hi hover:bg-ink-700">
+      <div>
+        <button
+          type="button"
+          onClick={() => setConfirm("signout")}
+          className="rounded-md border border-line px-3 py-2 text-sm text-text-hi hover:bg-ink-700"
+        >
           Sign out
         </button>
-      </form>
+      </div>
+
+      <ConfirmDialog
+        open={confirm === "signout"}
+        title="Sign out?"
+        body="You'll be returned to the sign-in page. Your portfolio and history stay saved."
+        confirmLabel="Sign out"
+        pendingLabel="Signing out…"
+        pending={pending && confirm === "signout"}
+        onConfirm={doSignOut}
+        onClose={() => setConfirm(null)}
+      />
+      <ConfirmDialog
+        open={confirm === "reset"}
+        title="Reset account?"
+        body="This clears all your holdings and order history and restores your cash to ₦5,000,000. It cannot be undone."
+        confirmLabel="Reset account"
+        pendingLabel="Resetting…"
+        pending={pending && confirm === "reset"}
+        onConfirm={doReset}
+        onClose={() => setConfirm(null)}
+      />
+      <ConfirmDialog
+        open={confirm === "delete"}
+        title="Delete account data?"
+        body="This permanently removes your account, holdings, and ledger. It cannot be undone."
+        confirmLabel="Yes, delete everything"
+        pendingLabel="Deleting…"
+        tone="danger"
+        pending={pending && confirm === "delete"}
+        onConfirm={doDelete}
+        onClose={() => setConfirm(null)}
+      />
     </div>
   );
 }
